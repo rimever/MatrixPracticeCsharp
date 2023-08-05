@@ -131,13 +131,135 @@ public class Tests
         void CalculateScale(Vector3 position, Vector3 scale)
         {
             var scaleMatrix = Matrix4x4.CreateScale(scale);
+            var scaledPosition = Vector3.Transform(position, scaleMatrix);
+            Console.WriteLine(
+                $"({position}) -> ({scaledPosition})");
+        }
+    }
+    
+    /// <summary>
+    /// Z軸回りの回転
+    /// </summary>
+    [Test]
+    public void RotateRoll()
+    {
+        CalculateRotate(new Vector3(50, 40, 0), 90);
+        CalculateRotate(new Vector3(100, 40, 0), 90);
+        CalculateRotate(new Vector3(75, 200, 0), 90);
+        
+        void CalculateRotate(Vector3 position, float degree)
+        {
+            var rotateMatrix = new Matrix4x4((float)Math.Cos(ToRadian(degree)), -(float)Math.Sin(ToRadian(degree)), 0, 0,
+                (float)Math.Sin(ToRadian(degree)), (float)Math.Cos(ToRadian(degree)), 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
             var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
                 position.Y, 0, 0, 0,
                 position.Z, 0, 0, 0,
                 0, 0, 0, 0);
-            var scaledPosition = Matrix4x4.Multiply(scaleMatrix, positionMatrix);
+            var calculateMatrix = Matrix4x4.Multiply(rotateMatrix, positionMatrix);
             Console.WriteLine(
-                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({scaledPosition.M11},{scaledPosition.M21},{scaledPosition.M31})");
+                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
+
         }
+    }
+    /// <summary>
+    /// Z軸回りの回転
+    /// </summary>
+    [Test]
+    public void RotationZ()
+    {
+        CalculateRotate(new Vector3(50, 40, 0), 90);
+        CalculateRotate(new Vector3(100, 40, 0), 90);
+        CalculateRotate(new Vector3(75, 200, 0), 90);
+        
+        void CalculateRotate(Vector3 position, float degree)
+        {
+            var rotateMatrix = Matrix4x4.CreateRotationZ((float)ToRadian(degree));
+            var scaledPosition = Vector3.Transform(position, rotateMatrix);
+            Console.WriteLine(
+                $"({position}) -> ({scaledPosition})");
+        }
+    }
+    /// <summary>
+    /// Y軸回りの回転
+    /// </summary>
+    [Test]
+    public void RotateYaw()
+    {
+        CalculateRotate(new Vector3(100, 0, -50), 180);
+        CalculateRotate(new Vector3(400, -40, 0), 180);
+        CalculateRotate(new Vector3(-20, 100, 50), 180);
+        
+        void CalculateRotate(Vector3 position, float degree)
+        {
+            var rotateMatrix = new Matrix4x4((float)Math.Cos(ToRadian(degree)), 0, (float)Math.Sin(ToRadian(degree)), 0,
+                0, 1, 0, 0,
+                (float)Math.Sin(ToRadian(degree)), 0, (float)Math.Cos(ToRadian(degree)), 0,
+                0, 0, 0, 1);
+            var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
+                position.Y, 0, 0, 0,
+                position.Z, 0, 0, 0,
+                0, 0, 0, 0);
+            var calculateMatrix = Matrix4x4.Multiply(rotateMatrix, positionMatrix);
+            Console.WriteLine(
+                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
+
+        }
+    }
+    
+    /// <summary>
+    /// X軸回りの回転
+    /// </summary>
+    [Test]
+    public void RotatePitch()
+    {
+        CalculateRotate(new Vector3(0, 30, -100), 45);
+        CalculateRotate(new Vector3(-50, 100, -20), 45);
+        CalculateRotate(new Vector3(-20, 0, -300), 45);
+        
+        void CalculateRotate(Vector3 position, float degree)
+        {
+            var rotateMatrix = new Matrix4x4(
+                1, 0, 0, 0,
+                0, (float)Math.Cos(ToRadian(degree)), -(float)Math.Sin(ToRadian(degree)), 0,
+                0, (float)Math.Sin(ToRadian(degree)), (float)Math.Cos(ToRadian(degree)), 0,
+                0, 0, 0, 1);
+            var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
+                position.Y, 0, 0, 0,
+                position.Z, 0, 0, 0,
+                0, 0, 0, 0);
+            var calculateMatrix = Matrix4x4.Multiply(rotateMatrix, positionMatrix);
+            Console.WriteLine(
+                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
+
+        }
+    }
+    
+    [Test]
+    public void RotatePitchCreatePitch()
+    {
+        //座標系が違う？
+        CalculateRotate(new Vector3(0, 30, -100), -45);
+        CalculateRotate(new Vector3(-50, 100, -20), -45);
+        CalculateRotate(new Vector3(-20, 0, -300), -45);
+        
+        void CalculateRotate(Vector3 position, float degree)
+        {
+            var rotateMatrix = Matrix4x4.CreateRotationX((float)ToRadian(degree));
+            var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
+                position.Y, 0, 0, 0,
+                position.Z, 0, 0, 0,
+                0, 0, 0, 0);
+            var calculateMatrix = Matrix4x4.Multiply(rotateMatrix, positionMatrix);
+            Console.WriteLine(
+                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
+
+        }        
+    }
+
+    private static double ToRadian(double degree)
+    {
+        return degree * Math.PI / 180f;
     }
 }
