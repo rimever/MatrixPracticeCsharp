@@ -240,26 +240,107 @@ public class Tests
     public void RotatePitchCreatePitch()
     {
         //座標系が違う？
-        CalculateRotate(new Vector3(0, 30, -100), -45);
-        CalculateRotate(new Vector3(-50, 100, -20), -45);
-        CalculateRotate(new Vector3(-20, 0, -300), -45);
+        CalculateRotate(new Vector3(0, 30, -100), 45);
+        CalculateRotate(new Vector3(-50, 100, -20), 45);
+        CalculateRotate(new Vector3(-20, 0, -300), 45);
         
         void CalculateRotate(Vector3 position, float degree)
         {
-            var rotateMatrix = Matrix4x4.CreateRotationX((float)ToRadian(degree));
-            var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
-                position.Y, 0, 0, 0,
-                position.Z, 0, 0, 0,
-                0, 0, 0, 0);
-            var calculateMatrix = Matrix4x4.Multiply(rotateMatrix, positionMatrix);
+            var rotateMatrix = Matrix4x4.CreateRotationX(ToRadian(degree));
             Console.WriteLine(
-                $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
-
+                $"({position}) -> ({Vector3.Transform(position, rotateMatrix)})");
         }        
     }
-
-    private static double ToRadian(double degree)
+    
+    /// <summary>
+    /// z軸30度roll,x軸180度pitch,y軸90yaw
+    /// </summary>
+    /// <remarks>OpenGL形式</remarks>
+    [Test]
+    public void Combine1()
     {
-        return degree * Math.PI / 180f;
+        var roll = Matrix4x4.CreateRotationZ(ToRadian(30));
+        var pitch = Matrix4x4.CreateRotationX(ToRadian(180));
+        var yaw = Matrix4x4.CreateRotationY(ToRadian(90));
+        // 逆順に計算する
+        var combine = yaw * pitch * roll;
+        var position = new Vector3(200, 0, -30);
+        var positionMatrix = new Matrix4x4(position.X, 0, 0, 0,
+            position.Y, 0, 0, 0,
+            position.Z, 0, 0, 0,
+            0, 0, 0, 0);
+        var calculateMatrix = Matrix4x4.Multiply(combine, positionMatrix);
+        Console.WriteLine(
+            $"({positionMatrix.M11},{positionMatrix.M21},{positionMatrix.M31}) -> ({calculateMatrix.M11},{calculateMatrix.M21},{calculateMatrix.M31})");
+    }
+    /// <summary>
+    /// z軸30度roll,x軸180度pitch,y軸90yaw
+    /// </summary>
+    /// <remarks>DirectX形式</remarks>
+    [Test]
+    public void Combine2()
+    {
+        var roll = Matrix4x4.CreateRotationZ(ToRadian(30));
+        var pitch = Matrix4x4.CreateRotationX(ToRadian(180));
+        var yaw = Matrix4x4.CreateRotationY(ToRadian(90));
+        var combine = roll * pitch * yaw;
+        var position = new Vector3(200, 0, -30);
+        var scaledPosition = Vector3.Transform(position, combine);
+        Console.WriteLine(
+            $"({position}) -> ({scaledPosition})");
+
+    }
+    
+    /// <summary>
+    /// 中心点周りに-90度回転させるための組み合わせ行列
+    /// </summary>
+    [Test]
+    public void Combine3()
+    {
+        var center = new Vector3(10, 50, 0);
+        var slide = Matrix4x4.CreateTranslation(-center);
+        var roll = Matrix4x4.CreateRotationZ(ToRadian(-90));
+        var reverseSlide = Matrix4x4.CreateTranslation(center);
+        var matrix = slide * roll * reverseSlide;
+        var position = new Vector3(-10, 50, 0);
+        var transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+        position = new Vector3(90, 0, 0);
+        transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+        position = new Vector3(-50, 100, 0);
+        transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+
+    }
+
+    /// <summary>
+    /// 3次元の物体を45Roll,90Pitch,-90Yaw
+    /// </summary>
+    [Test]
+    public void Combine4()
+    {
+        var matrix = Matrix4x4.CreateRotationZ(ToRadian(45)) * Matrix4x4.CreateRotationX(ToRadian(90)) *
+                     Matrix4x4.CreateRotationY(ToRadian(-90));
+        var position = new Vector3(200, 0, -30);
+        var transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+        position = new Vector3(0, 50, -150);
+        transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+        position = new Vector3(40, 20, -100);
+        transform = Vector3.Transform(position, matrix);
+        Console.WriteLine(
+            $"({position}) -> ({transform})");
+    }
+
+    private static float ToRadian(double degree)
+    {
+        return (float)(degree * Math.PI / 180f);
     }
 }
